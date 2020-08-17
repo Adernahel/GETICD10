@@ -1,4 +1,4 @@
-from urllib.request import Request, urlopen
+import requests
 import json
 import csv
 
@@ -9,21 +9,14 @@ url = 'https://api.dane.gov.pl/resources/10566,miedzynarodowa-statystyczna-klasy
 
 
 def recur(urlt):
-    request = Request(urlt)
-    response = urlopen(request)
-    icd10 = response.read()
-    selflink = json.loads(icd10)['links']['self']
-    nextlink = json.loads(icd10)['links']['next']
-    lastlink = json.loads(icd10)['links']['last']
+
+    response = requests.get(urlt).json()
+    nextlink = response['links'].get('next', None)
+    
     print(nextlink)
-    if selflink != lastlink:
+    if nextlink:
         return(recur(nextlink))
     else:
         return None
 
 print(recur(url))
-    
-
-
-
-

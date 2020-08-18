@@ -8,7 +8,7 @@ import re
 
 
 class PatientRandom:
-    def __init__(self,FirstName=None,LastName=None,BirthDate=None,Gender=None,NaturalId=None,City=None,Street=None,ZipCode=None):
+    def __init__(self,**kwargs):
         start_date = datetime.date(1920, 1, 1)
         end_date = datetime.date(2020, 1, 1)   
         time_between_dates = end_date - start_date
@@ -41,14 +41,12 @@ class PatientRandom:
         self.Street = barnum.create_street()
         self.ZipCode = ZipCod
 
+        # update properties if kwargs are passed 
+        self.__dict__.update(kwargs)
 
     
 testperson = PatientRandom()
 print (testperson.__dict__)
 
-            
-
-
-
-
-            
+testperson = PatientRandom(FirstName="Bart0sz")
+print (testperson.__dict__)            

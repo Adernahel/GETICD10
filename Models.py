@@ -92,8 +92,8 @@ class VisitProcedures(Base):
 class Diagnosis(Base):
     __tablename__= 'diagnosisdict'
     id = Column(Integer,primary_key=True)
-    ICD10 = Column(String(5))
-    Name = Column(String(40)) 
+    ICD10 = Column(String(10))
+    Name = Column(String(250)) 
     Version = Column(String(15))
 
     def __repr__(self):

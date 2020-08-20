@@ -2,12 +2,14 @@ import csv
 import os
 import pandas as pd
 import random
+import names
+import datetime
+from datetime import date
 from ICD10csv import get_type2_role_csv
+from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table
 
 
-type_1_roles = {'Roles': ['Physician','Receptionist'], 'RoleType' : '1' }
 
-type_2_roles = get_type2_role_csv()
 
 def create_clinic_spec(role_data_frame):
     df = role_data_frame
@@ -19,12 +21,6 @@ def create_clinic_spec(role_data_frame):
         concated_roles = pd.concat([concated_roles,random_role])
     
     return concated_roles[['Specialist titles','Specialty']]
-
-print(create_clinic_spec(type_2_roles))   
-
-ccs = create_clinic_spec(type_2_roles)
-
-
 
 def create_clinic_services(clinic_spec_data_frame):
     df = clinic_spec_data_frame
@@ -131,9 +127,52 @@ def create_clinic_services(clinic_spec_data_frame):
             concated_services = pd.concat([concated_services,all_service_df])
     return concated_services
 
-print(create_clinic_services(ccs))
+def create_clinic_physician(clinic_spec_data_frame):
+    df = clinic_spec_data_frame
+    concated_physician = pd.DataFrame(columns=['FirstName','LastName','LicenseNo','HireDate','Age','Specialty'])
+
+
+    for i,row in df.iterrows():
+        FirstName = ''
+        LastName = names.get_last_name()
+        LicenseNo = "S" + str(row['Specialty'])[0] + str(random.randint(10000,99999))
+        HireDate = date.today()
+        Age = random.randint(27,80)
+        Speciality = row['Specialist titles']
+
+        MaleFemale = random.randint(0, 1)
+        if MaleFemale == 0:
+            FirstName = names.get_first_name(gender='male')
+
+        if MaleFemale == 1:
+            FirstName = names.get_first_name(gender='female')
         
-print('test')
+        created_physician=[[FirstName,LastName,str(LicenseNo),HireDate,Age,Speciality]]
+        created_physician_df = pd.DataFrame(created_physician,columns=['FirstName','LastName','LicenseNo','HireDate','Age','Specialty'])
+        concated_physician = pd.concat([concated_physician,created_physician_df])
+    
+    return concated_physician
 
 
+
+type_1_roles = {'Roles': ['Physician','Receptionist'], 'RoleType' : '1' }
+
+type_2_roles = get_type2_role_csv()
+
+ccs = create_clinic_spec(type_2_roles)
+
+cp = create_clinic_physician(ccs)
+
+print(ccs)
+
+print(create_clinic_services(ccs))
+
+print(cp)
+
+
+populate_role_table(ccs)
+
+populate_employee_tables(cp)
+
+populate_employeeroles_table(cp)
 

@@ -39,7 +39,7 @@ def Add_New_Patients(amount):
         session.commit()
         session.close
 
-def Populate_ICD10_Table(icd10_data_frame):
+def populate_ICD10_table(icd10_data_frame):
     df = icd10_data_frame
     df.columns = ['ICD10','Name']
     df.to_sql('diagnosisdict',con=engine, if_exists='append',index_label='id')

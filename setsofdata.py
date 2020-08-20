@@ -6,7 +6,8 @@ import names
 import datetime
 from datetime import date
 from ICD10csv import get_type2_role_csv
-from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table
+from ICD10csv import get_icd10_csv
+from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table,populate_ICD10_table
 
 
 
@@ -176,3 +177,4 @@ populate_employee_tables(cp)
 
 populate_employeeroles_table(cp)
 
+populate_ICD10_table(get_icd10_csv())

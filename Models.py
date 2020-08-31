@@ -34,8 +34,8 @@ class EmployeeModel(Base):
 class Roles(Base):
     __tablename__ = 'roles'
     id = Column(Integer,primary_key=True)
-    RoleName = Column(String(20))
-    RoleType = Column(Integer)
+    RoleName = Column(String(250))
+    RoleType = Column(String(250))
     
     def __repr__(self):
         return "<Roles(RoleName='{}'),RoleType='{}'>"\
@@ -189,7 +189,7 @@ class Patient(Base):
     FirstName = Column(String(30))
     LastName = Column(String(50))
     BirthDate = Column(Date)    
-    Gender = Column(Boolean)
+    Gender = Column(Integer)
     Street = Column(String(50))
     City = Column(String(30))
     ZipCode = Column(String(10))

@@ -1,15 +1,56 @@
 import csv
 import os
 import pandas as pd
+import numpy as ny
 import random
 import names
 import datetime
+import barnum
+import re
 from datetime import date
 from ICD10csv import get_type2_role_csv
 from ICD10csv import get_icd10_csv
-from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table,populate_ICD10_table
+from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table,populate_ICD10_table,populate_patient_table
 
+class PatientRandom:
+    def __init__(self,Pediatric,**kwargs):
+        if Pediatric == 1:
+            start_date = datetime.date(2005, 1, 1)
+        else:
+            start_date = datetime.date(1920, 1, 1)
+        end_date = datetime.date(2020, 1, 1)   
+        time_between_dates = end_date - start_date
+        days_between_dates = time_between_dates.days
+        random_number_of_days = random.randrange(days_between_dates)
+        MaleFemale = random.randint(0, 1)
+        BirthDate = start_date + datetime.timedelta(days=random_number_of_days)
+        CityZip = barnum.create_city_state_zip()
+        CitySlice = slice(1,2)
+        ZipSlice = slice(0,1)
+        x =(CityZip[CitySlice])
+        y =(CityZip[ZipSlice])
+        Cit = str(x).replace("\'","").replace("(","").replace(")","").replace(",","")
+        ZipCod = str(y).replace("\'","").replace("(","").replace(")","").replace(",","")
+        LastName = names.get_last_name()
+        NaturalId = str(BirthDate).replace("-","") + str(MaleFemale) + str(random.randint(1111111,9999999))
 
+        if MaleFemale == 0:
+            FirstName = names.get_first_name(gender='male')
+
+        if MaleFemale == 1:
+            FirstName = names.get_first_name(gender='female')
+        
+        self.FirstName = FirstName
+        self.LastName = LastName
+        self.BirthDate = BirthDate
+        self.Gender = MaleFemale
+        self.NaturalId = NaturalId
+        self.City = Cit
+        self.Street = barnum.create_street()
+        self.ZipCode = ZipCod
+
+        # update properties if kwargs are passed 
+        self.__dict__.update(kwargs)
 
 
 def create_clinic_spec(role_data_frame):
@@ -154,9 +195,23 @@ def create_clinic_physician(clinic_spec_data_frame):
     
     return concated_physician
 
+def create_clinic_first_patients(clinic_spec_data_frame):
+    df = clinic_spec_data_frame
+    all_patients = pd.DataFrame(columns=['FirstName','LastName','BirthDate','Gender','NaturalId','City', 'Street', 'ZipCode'])
+
+    for i,row in df.iterrows():
+        random_num_patients = random.randint(10,40)
+        if row['Specialty'] == "Paediatrics and child health":
+            is_child = 1
+        else:
+            is_child = 0
+        for i in range(random_num_patients):
+            random_patient_dict = PatientRandom(is_child).__dict__            
+            random_patient_df = pd.DataFrame([random_patient_dict], columns=random_patient_dict.keys())
+            all_patients = pd.concat([all_patients,random_patient_df])
+    return all_patients 
 
 
-type_1_roles = {'Roles': ['Physician','Receptionist'], 'RoleType' : '1' }
 
 type_2_roles = get_type2_role_csv()
 
@@ -164,17 +219,16 @@ ccs = create_clinic_spec(type_2_roles)
 
 cp = create_clinic_physician(ccs)
 
-print(ccs)
+cs = create_clinic_services(ccs)
 
-print(create_clinic_services(ccs))
-
-print(cp)
-
+cpa = create_clinic_first_patients(ccs)
 
 populate_role_table(ccs)
 
 populate_employee_tables(cp)
 
 populate_employeeroles_table(cp)
+
+populate_patient_table(cpa)
 
 populate_ICD10_table(get_icd10_csv())

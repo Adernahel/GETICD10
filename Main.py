@@ -8,8 +8,11 @@ import re
 
 
 class PatientRandom:
-    def __init__(self,**kwargs):
-        start_date = datetime.date(1920, 1, 1)
+    def __init__(self,Pediatric,**kwargs):
+        if Pediatric == 1:
+            start_date = datetime.date(2005, 1, 1)
+        else:
+            start_date = datetime.date(1920, 1, 1)
         end_date = datetime.date(2020, 1, 1)   
         time_between_dates = end_date - start_date
         days_between_dates = time_between_dates.days
@@ -31,7 +34,7 @@ class PatientRandom:
 
         if MaleFemale == 1:
             FirstName = names.get_first_name(gender='female')
-
+        
         self.FirstName = FirstName
         self.LastName = LastName
         self.BirthDate = BirthDate
@@ -44,9 +47,10 @@ class PatientRandom:
         # update properties if kwargs are passed 
         self.__dict__.update(kwargs)
 
-    
-testperson = PatientRandom()
-print (testperson.__dict__)
 
-testperson = PatientRandom(FirstName="Bart0sz")
-print (testperson.__dict__)            
+
+
+
+
+#testperson = PatientRandom(Pediatric=1)
+#print (testperson.__dict__)            

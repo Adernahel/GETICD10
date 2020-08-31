@@ -58,6 +58,11 @@ def populate_role_table(role_data_frame):
     df.to_sql('roles', con=engine, if_exists='append',index=False,index_label='id')
     engine.execute("select * from roles").fetchall()
 
+def populate_patient_table(patient_data_frame):
+    df = patient_data_frame
+    df.to_sql('patient',con=engine, if_exists='append',index=False,index_label="id")
+    engine.execute("select * from patient").fetchall()
+    
 
 def populate_employee_tables(employee_data_frame):
     df = employee_data_frame[['FirstName','LastName','LicenseNo','HireDate','Age']]

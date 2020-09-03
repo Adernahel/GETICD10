@@ -10,7 +10,8 @@ import re
 from datetime import date
 from ICD10csv import get_type2_role_csv
 from ICD10csv import get_icd10_csv
-from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table,populate_ICD10_table,populate_patient_table
+from Crud import populate_employee_tables,populate_role_table,populate_employeeroles_table,populate_ICD10_table,populate_patient_table,populate_service_table, populate_schedule_tables
+from pandas.util import hash_pandas_object
 
 class PatientRandom:
     def __init__(self,Pediatric,**kwargs):
@@ -211,6 +212,62 @@ def create_clinic_first_patients(clinic_spec_data_frame):
             all_patients = pd.concat([all_patients,random_patient_df])
     return all_patients 
 
+def create_schedules(clinic_spec_data_frame,clinic_physicians,schedule_min_date,schedule_period):
+    cs_df = clinic_spec_data_frame
+    cp_df = clinic_physicians
+    sch_min_d = datetime.datetime.strptime(schedule_min_date,'%Y-%m-%d')
+    sch_max_d = sch_min_d + datetime.timedelta(days=schedule_period)
+    physicans_work_week = pd.DataFrame(columns=['Physican','Day','TimeStart','TimeEnd'])
+
+    for i,row in cp_df.iterrows():
+        
+        random_working_periods = random.randint(1,5)
+        week_day_list = []
+        physican_id = row['LicenseNo']
+        physican_spec = row['Specialty']
+        work_days_df = pd.DataFrame(columns=['Physican','Specialty','Day','TimeStart','TimeEnd'])
+
+        for i in range(random_working_periods):
+            random_week_day = random.randint(0,4)
+            week_day_list.append(random_week_day)
+
+        week_day_df = pd.DataFrame(week_day_list,columns=['WeekDays'])
+
+        week_day_df = week_day_df.groupby(['WeekDays']).size().reset_index(name='counts')
+
+        for i,row in week_day_df.iterrows():
+            hour_time = 8
+            row_count = row['counts']
+            work_day_number = row['WeekDays']
+            hour_time = (hour_time / row_count) * 3600
+            min_hour = 7
+            max_hour = 21 - (8 + (row_count - 1))
+            min_break = 15 * 60
+            max_break = 60 * 60
+
+            start_hour = random.randrange(min_hour * 3600,max_hour * 3600, 15 * 60)
+
+            for i in range(row_count):
+                work_day = [[physican_id,physican_spec,work_day_number,start_hour,(start_hour + hour_time)]]
+                work_day_df = pd.DataFrame(work_day,columns=['Physican','Specialty','Day','TimeStart','TimeEnd'])
+                work_days_df = pd.concat([work_days_df,work_day_df])
+                random_break_lenght = random.randrange(min_break,max_break, 5 * 60)
+                start_hour = start_hour + hour_time + random_break_lenght
+        
+        physicans_work_week = pd.concat([physicans_work_week,work_days_df])
+    
+    dates_from_range_df = pd.DataFrame({'dates':pd.date_range(start=sch_min_d,end=sch_max_d)})          
+
+    dates_from_range_df['Day'] = dates_from_range_df['dates'].dt.dayofweek
+                
+
+    work_period_df = pd.merge(dates_from_range_df,physicans_work_week,on='Day')
+
+    work_period_df['Hash'] = hash_pandas_object(work_period_df)
+
+    return work_period_df[['dates','Physican','Specialty','TimeStart','TimeEnd','Hash']]
+
+
 
 
 type_2_roles = get_type2_role_csv()
@@ -223,12 +280,22 @@ cs = create_clinic_services(ccs)
 
 cpa = create_clinic_first_patients(ccs)
 
+
+csch = create_schedules(ccs,cp,'2020-09-01',30)
+
+
+
+
 populate_role_table(ccs)
 
 populate_employee_tables(cp)
 
 populate_employeeroles_table(cp)
 
+populate_service_table(cs)
+
 populate_patient_table(cpa)
 
 populate_ICD10_table(get_icd10_csv())
+
+populate_schedule_tables(csch)

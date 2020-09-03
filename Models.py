@@ -1,5 +1,5 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, Text, Float, Boolean, ForeignKey, Date
+from sqlalchemy import Column, Integer, String, Text, Float, Boolean, ForeignKey, Date, BigInteger
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
@@ -56,8 +56,8 @@ class EmployeeRoles(Base):
 class Service(Base):
     __tablename__= 'services'
     id = Column(Integer,primary_key=True)
-    ServiceName = Column(String(40))
-    ServiceShort = Column(String(10))
+    ServiceName = Column(String(250))
+    ServiceShort = Column(String(20))
     ServicePrice = Column(Integer) 
     ServiceCost = Column(Integer)
     ServiceDuration = Column(Integer)
@@ -139,13 +139,14 @@ class VisitForms(Base):
 class Schedule(Base):
     __tablename__= 'schedule'
     id = Column(Integer,primary_key=True)
-    ScheduledDate = (Date)
-    ScheduleTimeS = (Integer)
-    ScheduleTimeE = (Integer)
+    ScheduledDate = Column(Date)
+    ScheduleTimeS = Column(Integer)
+    ScheduleTimeE = Column(Integer)
+    ScheduleHash = Column(String(250))
 
     def __repr__(self):
-        return "<Schedule(ScheduledDate={},ScheduleTimeS={},ScheduleTimeE={})>"\
-            .format(self.ScheduledDate,self.ScheduleTimeS,self.ScheduleTimeE)
+        return "<Schedule(ScheduledDate={},ScheduleTimeS={},ScheduleTimeE={},ScheduleHash='{}')>"\
+            .format(self.ScheduledDate,self.ScheduleTimeS,self.ScheduleTimeE,self.ScheduleHash)
 
 class ScheduleTypes(Base):
     __tablename__= 'schedulertypes'

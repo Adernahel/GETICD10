@@ -1,7 +1,6 @@
 ### crud.py ###
 from Config import *
 from Models import Base,Patient
-from Main import PatientRandom
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import date
@@ -19,25 +18,6 @@ recreate_database()
 Session = sessionmaker(bind=engine)
 session = Session()
 
-def Add_New_Patients(amount):
-    patient_list = []
-    
-    for i in range(amount):
-        patient_list.append(PatientRandom())
-    for obj in patient_list:
-        patient = Patient(
-            NaturalId = obj.NaturalId, 
-            FirstName = obj.FirstName,
-            LastName = obj.LastName,
-            BirthDate= obj.BirthDate,  
-            Gender = obj.Gender,
-            Street = obj.Street,
-            City = obj.City,
-            ZipCode = obj.ZipCode 
-        )
-        session.add(patient)
-        session.commit()
-        session.close
 
 def populate_ICD10_table(icd10_data_frame):
     df = icd10_data_frame
@@ -72,6 +52,7 @@ def populate_employee_tables(employee_data_frame):
     
 def populate_employeeroles_table(employee_data_frame):
     df_employeerole = employee_data_frame
+
     for i,row in df_employeerole.iterrows():
         employee_sql = pd.read_sql(('select "id" from employee where "FirstName" = %(fname)s AND "LastName" = %(lname)s AND "LicenseNo" = %(lno)s'),con=engine,\
         params=({'fname':str(row['FirstName']),'lname':str(row['LastName']),'lno':str(row['LicenseNo'])}))
@@ -91,7 +72,58 @@ def populate_employeeroles_table(employee_data_frame):
 
         df_employeerole_tosql.to_sql('employeeroles',con=engine, if_exists='append',index=False,index_label='id')
         
+def populate_schedule_tables(schedule_data_frame):
+    df_schedule = schedule_data_frame
+
+    for i,row in df_schedule.iterrows():
+        role_sql = pd.read_sql(('select "id" from roles where "RoleName" = %(rname)s'),con=engine,params=({'rname':row['Specialty']}))
+        employee_sql = pd.read_sql(('select "id" from employee where "LicenseNo" = %(lno)s'),con=engine,params=({'lno':str(row['Physican'])}))
+
+        print(role_sql['id'])
+        print(employee_sql['id'])
+        schedule_type = 0
+
+        schedule_dict = {'ScheduledDate':[row['dates']],'ScheduleTimeS':[row['TimeStart']],'ScheduleTimeE':[row['TimeEnd']],'ScheduleHash':str([row['Hash']])}
+
+        df_schedule_tosql = pd.DataFrame(data=schedule_dict)
+
         
+
+        df_schedule_tosql.to_sql('schedule',con=engine,if_exists='append',index=False,index_label='id')
+
+        schedule_id = pd.read_sql(('select "id" from schedule where "ScheduleHash" = %(rhash)s'),con=engine,params=({'rhash':'[' + str(row['Hash']) + ']'}))
+
+        print(schedule_id)
+
+        if employee_sql.empty:
+            schedule_type = 1
+        else:
+            schedule_type = 2
+
+        scheduletypes_dict = {'ScheduleType':[schedule_type],'ScheduleId':[schedule_id['id'].iloc[0]],'PhysicianId':[employee_sql['id'].iloc[0]],'RoleId':[role_sql['id'].iloc[0]]}
+
+        df_scheduletypes_tosql = pd.DataFrame(data=scheduletypes_dict)
+
+   
+
+        df_scheduletypes_tosql.to_sql('schedulertypes',con=engine,if_exists='append',index=False,index_label='id')
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+
 
 
 
